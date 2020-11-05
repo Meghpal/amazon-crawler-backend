@@ -1,16 +1,9 @@
 from flask import Flask
-from time import sleep
+import views
 
 app = Flask(__name__)
 
-
-@app.route("/")
-def home():
-    print("started")
-    sleep(5)
-    print("done")
-    return {"a": "1"}
-
+app.add_url_rule("/", view_func=views.index)
 
 if __name__ == "__main__":
     app.run()
