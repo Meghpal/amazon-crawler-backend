@@ -1,9 +1,9 @@
 from flask import Flask
-import views
+from views import index
 
 app = Flask(__name__)
 
-app.add_url_rule("/", view_func=views.index)
+app.add_url_rule("/", methods=["GET", "POST"], view_func=index)
 
 if __name__ == "__main__":
-    app.run()
+    app.run(debug=True)
