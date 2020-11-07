@@ -4,29 +4,41 @@ import lxml
 import time
 
 
-def get_reviews(json_dict, type="all_reviews"):
-    info = json_dict["url"]
-    data = ()
-    if len(info.split(r"url=%2F")) > 1:
-        splt = info.split(r"%2F")
-        base_url = splt[0].split(r"/")[2]
-        data = {"base_url": base_url, "name": splt[1], "id": splt[3]}
-    else:
-        splt = info.split(r"/")
-        data = {"base_url": splt[2], "name": splt[3], "id": splt[5]}
-    url = f"""https://{data["base_url"]}/{data["name"]}/product-reviews/{data["id"]}/ref=cm_cr_dp_d_show_all_btm?ie=UTF8&pageNumber=1&reviewerType={type}"""
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.111 Safari/537.36"
-    }
-    page = requests.get(url, headers=headers)
-    soup = BeautifulSoup(page.content, "lxml")
+def get_reviews(
+    url, base_url, accumulator=[], chunksize=50, callback=None, kwargs=None
+):
+    def get_from_page(url, base_url, accumulator, chunksize):
+        time.sleep(5)
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.111 Safari/537.36"
+        }
+        page = requests.get(url, headers=headers)
+        soup = BeautifulSoup(page.content, "lxml")
 
-    reviews = soup.select(".review")
-    # next_page = data["base_url"] + soup.select(".a-last a")[0]["href"]
+        reviews = soup.select(".review")
+        try_next = soup.select(".a-last:not(.a-disabled) a")
+        next_page = (
+            "https://" + base_url + try_next[0]["href"] if len(try_next) > 0 else None
+        )
 
-    response = []
+        for review in reviews:
+            accumulator.append(
+                review.select(".review-text")[0].get_text(separator="\n").strip()
+            )
 
-    for review in reviews:
-        response.append(review.select(".review-text")[0].get_text())
+        if len(accumulator) >= chunksize or next_page is None:
+            f = open("reviews.txt", "a")
+            f.write(str(accumulator))
+            f.close()
+            accumulator = []
 
-    return {"list": response}
+        if next_page is not None:
+            get_from_page(next_page, base_url, accumulator, chunksize)
+
+    get_from_page(url, base_url, accumulator, chunksize)
+
+    if callback is not None:
+        if kwargs is not None:
+            callback(**kwargs)
+        else:
+            callback()
