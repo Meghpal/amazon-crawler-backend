@@ -23,10 +23,9 @@ def fetch_reviews():
         data = {"base_url": splt[2], "name": splt[3], "id": splt[5]}
 
     url = f"""https://{data["base_url"]}/{data["name"]}/product-reviews/{data["id"]}/ref=cm_cr_dp_d_show_all_btm?ie=UTF8&pageNumber=1&reviewerType={type}"""
-    empty = []
     thread = Thread(
         target=get_reviews,
-        kwargs={"url": url, "base_url": data["base_url"], "accumulator": empty},
+        kwargs={"url": url, "base_url": data["base_url"]},
     )
     thread.start()
     return "Initiated"

@@ -5,7 +5,7 @@ import time
 
 
 def get_reviews(
-    url, base_url, accumulator=[], chunksize=50, callback=None, kwargs=None
+    url, base_url, accumulator=None, chunksize=50, callback=None, kwargs=None
 ):
     def get_from_page(url, base_url, accumulator, chunksize):
         time.sleep(5)
@@ -34,6 +34,9 @@ def get_reviews(
 
         if next_page is not None:
             get_from_page(next_page, base_url, accumulator, chunksize)
+
+    if accumulator is None:
+        accumulator = []
 
     get_from_page(url, base_url, accumulator, chunksize)
 
