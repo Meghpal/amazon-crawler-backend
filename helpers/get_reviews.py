@@ -1,17 +1,19 @@
 import requests
-from bs4 import BeautifulSoup
 import lxml
 import time
+import random
+
+from bs4 import BeautifulSoup
+from helpers.save_data import save_data
+from helpers.get_header import get_header
 
 
 def get_reviews(
     url, base_url, accumulator=None, chunksize=50, callback=None, kwargs=None
 ):
     def get_from_page(url, base_url, accumulator, chunksize):
-        time.sleep(5)
-        headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.111 Safari/537.36"
-        }
+        time.sleep(random.randint(2, 12))
+        headers = get_header()
         page = requests.get(url, headers=headers)
         soup = BeautifulSoup(page.content, "lxml")
 
@@ -27,9 +29,7 @@ def get_reviews(
             )
 
         if len(accumulator) >= chunksize or next_page is None:
-            f = open("reviews.txt", "a")
-            f.write(str(accumulator))
-            f.close()
+            save_data(accumulator)
             accumulator = []
 
         if next_page is not None:

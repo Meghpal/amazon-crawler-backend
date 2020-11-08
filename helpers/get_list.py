@@ -1,18 +1,21 @@
 import requests
-from bs4 import BeautifulSoup
 import lxml
+
+from bs4 import BeautifulSoup
+from helpers.get_header import get_header
 
 
 def get_list(url):
     base_url = url.split(r"/")[2]
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.111 Safari/537.36"
-    }
+    headers = get_header()
     page = requests.get(url, headers=headers)
     soup = BeautifulSoup(page.content, "lxml")
 
     items = soup.select(".s-result-item:not(.s-widget)")
-    next_page = soup.select(".a-last a")[0]["href"]
+    try_next = soup.select(".a-last a")
+    next_page = (
+        "https://" + base_url + try_next[0]["href"] if len(try_next) > 0 else None
+    )
 
     response = []
 
@@ -31,4 +34,4 @@ def get_list(url):
                 "url": "https://" + base_url + data["href"],
             }
         )
-    return {"list": response, "next": "https://" + base_url + next_page}
+    return {"list": response, "next": next_page}

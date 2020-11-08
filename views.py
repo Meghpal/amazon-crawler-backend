@@ -4,10 +4,14 @@ from helpers.get_reviews import get_reviews
 from threading import Thread
 
 
-def index():
+def search():
     json = request.json
     url = f"""https://{json["base_url"]}/s?k={json["search_string"]}"""
     return get_list(url)
+
+
+def search_next():
+    return get_list(request.json["next"])
 
 
 def fetch_reviews():
