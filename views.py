@@ -1,3 +1,5 @@
+import os
+
 from flask import request
 from helpers.get_list import get_list
 from helpers.get_reviews import get_reviews
@@ -26,10 +28,13 @@ def fetch_reviews():
         splt = info.split(r"/")
         data = {"base_url": splt[2], "name": splt[3], "id": splt[5]}
 
+    if os.path.exists("./reviews/reviews_" + data["id"] + ".txt"):
+        return "Already exists"
+
     url = f"""https://{data["base_url"]}/{data["name"]}/product-reviews/{data["id"]}/ref=cm_cr_dp_d_show_all_btm?ie=UTF8&pageNumber=1&reviewerType={type}"""
     thread = Thread(
         target=get_reviews,
-        kwargs={"url": url, "base_url": data["base_url"]},
+        kwargs={"url": url, "data": data},
     )
     thread.start()
     return "Initiated"
